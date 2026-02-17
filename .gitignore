@@ -20,6 +20,7 @@ yarn-error.log*
 /frontend/build
 /frontend/dist
 
+/backend/logs
 # ================================
 # Logs
 # ================================

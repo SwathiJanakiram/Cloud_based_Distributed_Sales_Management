@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { createProduct, getProducts } = require("../controllers/products.controller");
 const { body, validationResult } = require("express-validator");
+const { verifyFirebaseToken, authorizeRoles } = 
+  require("../middleware/firebaseAuth.middleware");
+
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -14,6 +17,8 @@ const validate = (req, res, next) => {
   next();
 };
 
+
+router.use(verifyFirebaseToken);
 router.post(
   "/",
   body("product_name").notEmpty().withMessage("Product name required"),

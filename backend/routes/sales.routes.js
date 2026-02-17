@@ -4,6 +4,8 @@ const { createSale } = require("../controllers/sales.controller");
 const { body, validationResult } = require("express-validator");
 const { strictLimiter } = require("../middleware/rateLimit.middleware");
 
+const { verifyFirebaseToken, authorizeRoles } = 
+  require("../middleware/firebaseAuth.middleware");
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -15,7 +17,7 @@ const validate = (req, res, next) => {
   }
   next();
 };
-
+router.use(verifyFirebaseToken);
 router.post(
   "/",
   body("product_id").isInt({ min: 1 }).withMessage("Invalid product ID"),

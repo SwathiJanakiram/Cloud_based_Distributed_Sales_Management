@@ -5,6 +5,8 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 const { apiLimiter } = require("./middleware/rateLimit.middleware");
+const { verifyFirebaseToken } = 
+  require("../middleware/firebaseAuth.middleware");
 
 
 const salesRoutes = require("./routes/sales.routes");
@@ -27,6 +29,7 @@ app.use(express.json());
 // });
 
 app.use(apiLimiter);
+router.use(verifyFirebaseToken);
 
 app.use("/api/v1/sales", salesRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);

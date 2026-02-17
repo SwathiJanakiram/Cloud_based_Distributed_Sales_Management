@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { createUser, getUsers } = require("../controllers/users.controller");
 const { body, validationResult } = require("express-validator");
+const { verifyFirebaseToken, authorizeRoles } = 
+  require("../middleware/firebaseAuth.middleware");
+
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -14,6 +17,8 @@ const validate = (req, res, next) => {
   next();
 };
 
+
+router.use(verifyFirebaseToken);
 router.post(
   "/",
   body("name").notEmpty().withMessage("Name is required"),
@@ -23,9 +28,10 @@ router.post(
     .withMessage("Invalid role"),
   body("region").notEmpty().withMessage("Region is required"),
   validate,
+  authorizeRoles("admin"),
   createUser
 );
 
-router.get("/", getUsers);
+router.get("/", authorizeRoles("admin"),getUsers);
 
 module.exports = router;

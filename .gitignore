@@ -12,6 +12,7 @@ yarn-error.log*
 .env.development
 .env.test
 .env.production
+.env.example
 
 # ================================
 # Frontend (React)
@@ -50,6 +51,7 @@ Thumbs.db
 *.pem
 *.key
 service-account.json
+firebase-service-account.json
 
 # ================================
 # Database

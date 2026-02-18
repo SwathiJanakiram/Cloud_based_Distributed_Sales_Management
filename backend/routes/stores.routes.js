@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createStores, getStores } = require("../controllers/stores.controller");
+const { createStore, getStores } = require("../controllers/stores.controller");
 
 const { body, validationResult } = require("express-validator");
 
@@ -26,7 +26,7 @@ router.post(
   body("region").notEmpty().withMessage("Region required"),
   validate,
   authorizeRoles("admin"),
-  createStores
+  createStore
 );
 
 

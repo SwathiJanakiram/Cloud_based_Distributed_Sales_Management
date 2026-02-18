@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getTotalRevenue,
+  getSummary,
   getRevenueByRegion,
   getTopProducts
 } = require("../controllers/analytics.controller");
@@ -11,7 +11,7 @@ const { verifyFirebaseToken, authorizeRoles } =
 
 router.use(verifyFirebaseToken);
 
-router.get("/total", getTotalRevenue);
+router.get("/total", getSummary);
 router.get("/region", getRevenueByRegion);
 router.get("/top-products", getTopProducts);
 

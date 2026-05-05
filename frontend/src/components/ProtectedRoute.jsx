@@ -9,7 +9,7 @@ export default function ProtectedRoute({ roles, children }) {
 
   if (roles && !roles.includes(role)) {
     // Redirect to their own dashboard instead of 403
-    const fallback = role === "admin" ? "/admin" : role === "manager" ? "/manager" : "/sales";
+    const fallback = role === "admin" ? "/admin" : role === "store_manager" ? "/storemanager" : role == "regional_manager" ? "/regionalmanager":"/salesperson";
     return <Navigate to={fallback} replace />;
   }
 

@@ -1,37 +1,40 @@
-// src/pages/StoresPage.jsx
+// src/pages/WarehousePage.jsx
 import { useEffect, useState } from "react";
 import {
-  getStores,
-  createStore,
-  editStore,
-  deleteStore,
+  createWarehouse,
+  getWarehouses,
+  editWarehouse,
+  deleteWarehouse,
 } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Topbar from "../components/Topbar";
-import Skeleton from "react-loading-skeleton";
 import { toast } from "react-toastify";
+import Skeleton from "react-loading-skeleton";
 
-export default function StoresPage() {
+export default function WarehousePage() {
   const { role } = useAuth();
-  const [stores, setStores] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [warehouse, setWarehouse] = useState([]);
+  const [loading, setLoading] = useState(true); 
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [form, setForm] = useState({
-    store_name: "",
-    city: "",
+    warehouse_id: "",
+    warehouse_name: "",
+    address: "",
     region_id: "",
     longitude: "",
     latitude: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await getStores();
-      setStores(res.data.data);
+      const res = await getWarehouses();
+      setWarehouse(res.data.data);
     } finally {
       setLoading(false);
     }
@@ -41,22 +44,27 @@ export default function StoresPage() {
     load();
   }, []);
 
-  function validateStore(form) {
+  function validateWarehouse(form) {
     const errors = {};
 
-    if (!form.store_name || form.store_name.trim() === "") {
-      errors.store_name = "Store name is required";
-    } else if (form.store_name.length < 3) {
-      errors.store_name = "Store name must be at least 3 characters";
-    }
-    if (!form.city || form.city.trim() === "") {
-      errors.city = "City is required";
+    // Warehouse name
+    if (!form.warehouse_name || form.warehouse_name.trim() === "") {
+      errors.warehouse_name = "Warehouse name is required";
+    } else if (form.warehouse_name.length < 3) {
+      errors.warehouse_name = "Warehouse name must be at least 3 characters";
     }
 
+    // Address
+    if (!form.address || form.address.trim() === "") {
+      errors.address = "Address is required";
+    }
+
+    // Region
     if (!form.region_id) {
       errors.region_id = "Region is required";
     }
 
+    // Latitude
     const lat = parseFloat(form.latitude);
     if (isNaN(lat)) {
       errors.latitude = "Latitude must be a number";
@@ -64,6 +72,7 @@ export default function StoresPage() {
       errors.latitude = "Latitude must be between -90 and 90";
     }
 
+    // Longitude
     const lng = parseFloat(form.longitude);
     if (isNaN(lng)) {
       errors.longitude = "Longitude must be a number";
@@ -80,59 +89,83 @@ export default function StoresPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const { valid, errors } = validateStore(form);
+    ;
+
+    const { valid, errors } = validateWarehouse(form);
 
     if (!valid) {
-      toast.error(Object.values(errors)[0]); // show first error
+      toast.error(Object.values(errors)[0]); // first error
       setSubmitting(false);
       return;
     }
+
     try {
-      await createStore(form);
-      toast.success(`Store "${form.store_name}" created.`);
-      setForm({ store_name: "", city: "", region_id: "" });
+      await createWarehouse(form);
+      toast.success(`Warehouse "${form.warehouse_name}" created.`);
+      clearForm()
       load();
     } catch (err) {
-      toast.error(err.response?.data?.message ?? "Failed to create store.");
+      toast.error(
+        err.response?.data?.message ?? "Failed to create warehouse.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleEdit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const { valid, errors } = validateStore(form);
+    ;
+
+    const { valid, errors } = validateWarehouse(form);
 
     if (!valid) {
-      toast.error(Object.values(errors)[0]); // show first error
+      toast.error(Object.values(errors)[0]); // first error
       setSubmitting(false);
       return;
     }
     try {
-      await editStore(form.store_id, form);
-      toast.success(`Store "${form.store_name}" updated.`);
-      setForm({ store_name: "", city: "", region_id: "" });
+      await editWarehouse(form.warehouse_id, form);
+      toast.success(` "${form.warehouse_name}" updated.`);
+      clearForm()
       load();
     } catch (err) {
-      toast.error(err.response?.data?.message ?? "Failed to Update store.");
+      toast.error(
+        err.response?.data?.message ?? "Failed to Update warehouse.",
+      );
     } finally {
       setSubmitting(false);
       setIsEdit(false);
     }
   };
   const handleDelete = async (id) => {
+    setSubmitting(true);
     try {
-      await deleteStore(id);
-      toast.success(`Store "${form.store_name}" deleted.`);
-      setForm({ store_name: "", city: "", region_id: "" });
+      await deleteWarehouse(id);
+      toast.success(`Warehouse "${form.warehouse_name}" deleted.`);
+     clearForm()
       load();
     } catch (err) {
-      toast.error(err.response?.data?.message ?? "Failed to Delete store.");
+      toast.error(
+        err.response?.data?.message ?? "Failed to Delete warehouse.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
+  const clearForm = () =>{
+    setForm({
+        warehouse_name: "",
+        address: "",
+        region_id: "",
+        longitude: "",
+        latitude: "",
+      });
+      setSubmitting(false);
+      setIsEdit(false)
+      setShowDeleteModal(false);
+      setShowModal(false);
+  }
 
   const regionColors = {
     North: "primary",
@@ -144,14 +177,14 @@ export default function StoresPage() {
 
   return (
     <>
-      <Topbar title="Stores">
+      <Topbar title="Warehouses">
         {role === "admin" && (
           <button
             className="btn btn-primary btn-sm fw-semibold"
             onClick={() => setShowModal(true)}
           >
             <i className="bi bi-plus-lg me-1" />
-            Add Store
+            Add Warehouse
           </button>
         )}
       </Topbar>
@@ -187,7 +220,7 @@ export default function StoresPage() {
           </div> 
       ) : (
         <div className="row g-3">
-          {stores.length === 0 && (
+          {warehouse.length === 0 && (
             <div className="col-12">
               <div
                 className="card border-0 shadow-sm text-center py-5"
@@ -198,45 +231,36 @@ export default function StoresPage() {
                   style={{ fontSize: 40 }}
                 />
                 <p className="text-muted">
-                  No stores yet. Add your first store.
+                  No warehouse yet. Add your first warehouse.
                 </p>
               </div>
             </div>
           )}
-          {stores.map((s) => {
-            const color = regionColors[s.region_id] ?? "secondary";
+          {warehouse.map((w) => {
             return (
-              <div key={s.store_id} className="col-sm-6 col-xl-4">
+              <div key={w.warehouse_id} className="col-sm-6 col-xl-4">
                 <div
                   className="card border-0 shadow-sm h-100"
                   style={{ borderRadius: "0.75rem" }}
                 >
                   <div className="card-body">
-                    {/* Top section */}
                     <div className="d-flex justify-content-between align-items-start mb-2">
-                      {/* Left icon */}
                       <div
                         className="rounded-2 d-flex align-items-center justify-content-center"
                         style={{ width: 40, height: 40, background: "#eff6ff" }}
                       >
                         <i className="bi bi-shop text-primary fs-5" />
-                      </div>
+                        </div>
 
-                      {/* Right actions */}
-                      <div className="d-flex align-items-center gap-2">
-                        <span
-                          className={`badge bg-${color}-subtle text-${color} px-2`}
-                        >
-                          {s.region}
-                        </span>
-
+                        <div className="d-flex align-items-center gap-2">
                         {/* Edit Button */}
                         <button
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => {
-                            setForm(s);
-                            setIsEdit(true);
-                            setShowModal(true);
+                              setForm(w);
+                              setIsEdit(true);
+                              setShowModal(true);
+                            
                           }}
                         >
                           <i className="bi bi-pencil" />
@@ -246,20 +270,19 @@ export default function StoresPage() {
                         <button
                           className="btn btn-sm btn-outline-danger"
                           onClick={() => {
-                            setForm(s);
-                            setShowDeleteModal(true);
+                            {
+                              setForm(w); setShowDeleteModal(true);
+                            }
                           }}
                         >
                           <i className="bi bi-trash" />
                         </button>
                       </div>
                     </div>
-
-                    {/* Store Info */}
-                    <h6 className="fw-bold mb-1 mt-2">{s.store_name}</h6>
+                    <h6 className="fw-bold mb-1 mt-2">{w.warehouse_name}</h6>
                     <p className="text-muted mb-0" style={{ fontSize: 13 }}>
                       <i className="bi bi-geo-alt me-1" />
-                      {s.city}
+                      {w.address}
                     </p>
                   </div>
                 </div>
@@ -281,15 +304,12 @@ export default function StoresPage() {
               style={{ borderRadius: "0.75rem", border: "none" }}
             >
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">
-                  {!isEdit ? "Add New Store" : "Update Store"}
-                </h5>
+                <h5 className="modal-title fw-bold"> {!isEdit ? "Add New Warehouse" : "Edit Warehouse" }</h5>
                 <button
                   className="btn-close"
-                  onClick={() => {
-                    setShowModal(false);
-                    setForm({ store_name: "", city: "", region_id: "" });
-                  }}
+                  onClick={() => 
+                    clearForm()
+                  }
                 />
               </div>
               <div className="modal-body">
@@ -299,14 +319,14 @@ export default function StoresPage() {
                       className="form-label fw-semibold"
                       style={{ fontSize: 13 }}
                     >
-                      Store Name
+                      Warehouse Name
                     </label>
                     <input
                       className="form-control"
                       placeholder="e.g. Downtown Outlet"
-                      value={form.store_name}
+                      value={form.warehouse_name}
                       onChange={(e) =>
-                        setForm({ ...form, store_name: e.target.value })
+                        setForm({ ...form, warehouse_name: e.target.value })
                       }
                       required
                     />
@@ -316,14 +336,14 @@ export default function StoresPage() {
                       className="form-label fw-semibold"
                       style={{ fontSize: 13 }}
                     >
-                      City
+                      Address
                     </label>
                     <input
                       className="form-control"
                       placeholder="e.g. Mumbai"
-                      value={form.city}
+                      value={form.address}
                       onChange={(e) =>
-                        setForm({ ...form, city: e.target.value })
+                        setForm({ ...form, address: e.target.value })
                       }
                       required
                     />
@@ -398,9 +418,9 @@ export default function StoresPage() {
                         {!isEdit ? "Creating... " : "Updating..."}
                       </>
                     ) : !isEdit ? (
-                      "Create Store"
+                      "Create Warehouse"
                     ) : (
-                      "Update Store"
+                      "Update Warehouse"
                     )}
                   </button>
                 </form>
@@ -409,7 +429,6 @@ export default function StoresPage() {
           </div>
         </div>
       )}
-
       {showDeleteModal && (
         <div
           className="modal show d-block"
@@ -422,26 +441,23 @@ export default function StoresPage() {
               style={{ borderRadius: "0.75rem", border: "none" }}
             >
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">Delete Store</h5>
+                <h5 className="modal-title fw-bold">Delete Warehouse</h5>
                 <button
                   className="btn-close"
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setForm({ store_name: "", city: "", region_id: "" });
-                  }}
+                  onClick={() => clearForm()}
                 />
               </div>
               <div className="modal-body">
                 <h6 className="fw-bold mb-1 mt-2">
-                  Are you sure want to delete {form.store_name}?
+                  Are you sure want to delete {form.warehouse_name}?
                 </h6>
                 <button
                   type="button"
                   className="btn btn-danger w-100 fw-semibold"
-                  onClick={() => handleDelete(form.store_id)}
+                  onClick={() => handleDelete(form.warehouse_id)}
                   disabled={submitting}
                 >
-                  {submitting ? "Deleting..." : "Delete Store"}
+                  {submitting ? "Deleting..." : "Delete Warehouse"}
                 </button>
               </div>
             </div>

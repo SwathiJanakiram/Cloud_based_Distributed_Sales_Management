@@ -9,16 +9,27 @@ const NAV_ITEMS = {
     { to: "/products", icon: "bi-box-seam",      label: "Products" },
     { to: "/stores",   icon: "bi-shop",          label: "Stores" },
     { to: "/users",    icon: "bi-people",         label: "Users" },
+    { to: "/warehouses", icon :"bi-house-lock", label: "Warehouses"},
+    { to: "/inventory", icon:"bi-list-check", label: "Inventory"},
+    { to: "/audit", icon:"bi-card-checklist", label: "Audit Logs"},
   ],
-  manager: [
-    { to: "/manager",  icon: "bi-graph-up-arrow", label: "Dashboard" },
+  regional_manager: [
+    { to: "/regionalmanager",  icon: "bi-graph-up-arrow", label: "Dashboard" },
     { to: "/sales",    icon: "bi-receipt",        label: "New Sale" },
     { to: "/products", icon: "bi-box-seam",       label: "Products" },
     { to: "/stores",   icon: "bi-shop",           label: "Stores" },
+    { to: "/inventory", icon:"bi-list-check", label: "Inventory"},
+  ],
+  store_manager: [
+    { to: "/storemanager",  icon: "bi-graph-up-arrow", label: "Dashboard" },
+    { to: "/sales",    icon: "bi-receipt",        label: "New Sale" },
+    { to: "/products", icon: "bi-box-seam",       label: "Products" },
+    { to: "/inventory", icon:"bi-list-check", label: "Inventory"},
   ],
   salesperson: [
     { to: "/sales",    icon: "bi-receipt",   label: "New Sale" },
     { to: "/products", icon: "bi-box-seam",  label: "Products" },
+    { to: "/inventory", icon:"bi-list-check", label: "Inventory"},
   ],
 };
 

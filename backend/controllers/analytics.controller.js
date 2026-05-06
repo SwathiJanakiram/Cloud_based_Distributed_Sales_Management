@@ -15,7 +15,7 @@ exports.getAdminSummary = async (req, res) => {
       WHERE is_deleted = 0`;
     let values = [];
     if (startDate && startDate!="null"){
-      query+=' and created_at >= ?';
+      query+=' AND sold_at >= ?';
       values.push(startDate)
     }
     const [[summary]] = await db.query(query,values);
@@ -40,12 +40,11 @@ exports.getRevenueByRegion = async (req, res) => {
     let values=[]
 
     if (startDate && startDate!="null"){
-      query+='WHERE created_at >= ?';
+      query+=' WHERE s.sold_at >= ?';
       values.push(startDate)
     }
 
-    query+=`
-      GROUP BY r.region_id, r.region_name
+    query+=` GROUP BY r.region_id, r.region_name
       ORDER BY revenue DESC
     `
     const [rows] = await db.query(query,values);
@@ -73,7 +72,7 @@ exports.getTopProducts = async (req, res) => {
     let values=[]
     
     if (startDate && startDate!="null"){
-      query+=' and created_at >= ? ';
+      query+=' AND s.sold_at >= ? ';
       values.push(startDate)
     }
     query+= ` GROUP BY p.product_id, p.product_name, p.category
@@ -104,11 +103,10 @@ exports.getStorePerformance = async (req, res) => {
       LEFT JOIN sales s ON s.store_id = st.store_id AND s.is_deleted = 0`;
     let values=[];
     if (startDate && startDate!="null"){
-      query+='WHERE created_at >= ?';
+      query+=' WHERE s.sold_at >= ? ';
       values.push(startDate)
     }
-    query+=`
-      GROUP BY st.store_id, st.store_name, st.city, r.region_name
+    query+=` GROUP BY st.store_id, st.store_name, st.city, r.region_name
       ORDER BY totalRevenue DESC
     `
     const [rows] = await db.query(query,values);

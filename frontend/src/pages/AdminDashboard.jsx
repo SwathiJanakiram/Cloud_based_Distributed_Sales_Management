@@ -56,30 +56,39 @@ export default function AdminDashboard() {
   const getStartDate = (filter) => {
     const now = new Date();
 
+    let date = null;
+
     switch (filter) {
       case "1 Year":
-        return new Date(now.setFullYear(now.getFullYear() - 1));
+        date = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
 
       case "3 Month":
-        return new Date(now.setMonth(now.getMonth() - 3));
+        date = new Date(now.setMonth(now.getMonth() - 3));
+        break;
 
       case "1 Week":
-        return new Date(now.setDate(now.getDate() - 7));
+        date = new Date(now.setDate(now.getDate() - 7));
+        break;
 
       case "Today":
-        return new Date(now.setHours(0, 0, 0, 0));
+        date = new Date(now.setHours(0, 0, 0, 0));
+        break;
 
       case "All":
       default:
-        return null; // no filter
+        return null;
     }
+    return date.toISOString();
   };
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
+        console.log(activetime);
         const startDate = getStartDate(activetime);
+        console.log(startDate);
         const results = await Promise.allSettled([
           getSummary(startDate),
           getByRegion(startDate),
@@ -88,7 +97,6 @@ export default function AdminDashboard() {
         ]);
 
         const [s, r, t, st] = results;
-
 
         setSummary(s.status === "fulfilled" ? s.value?.data?.data || [] : []);
         setRegions(r.status === "fulfilled" ? r.value?.data?.data || [] : []);
@@ -103,7 +111,6 @@ export default function AdminDashboard() {
       }
     })();
   }, [activetime]);
-
 
   const time = ["All", "1 Year", "3 Month", "1 Week", "Today"];
 
@@ -123,26 +130,35 @@ export default function AdminDashboard() {
           Admin
         </span>
       </Topbar>
-      {loading ? <div className="d-flex gap-2 flex-wrap m-4">
-  {Array(6).fill().map((_, i) => (
-    <Skeleton key={i} height={30} width={70} style={{ borderRadius: 20 }} />
-  ))}
-</div> :
-      <div className="d-flex gap-2 flex-wrap m-4">
-        {time.map((r) => (
-          <button
-            key={r}
-            className={`btn btn-sm ${
-              activetime === r ? "btn-primary" : "btn-outline-secondary"
-            }`}
-            style={{ fontSize: 12, borderRadius: "20px" }}
-            onClick={() => setActivetime(r)}
-          >
-            {r}
-          </button>
-        ))}
-      </div>
-}
+      {loading ? (
+        <div className="d-flex gap-2 flex-wrap m-4">
+          {Array(6)
+            .fill()
+            .map((_, i) => (
+              <Skeleton
+                key={i}
+                height={30}
+                width={70}
+                style={{ borderRadius: 20 }}
+              />
+            ))}
+        </div>
+      ) : (
+        <div className="d-flex gap-2 flex-wrap m-4">
+          {time.map((r) => (
+            <button
+              key={r}
+              className={`btn btn-sm ${
+                activetime === r ? "btn-primary" : "btn-outline-secondary"
+              }`}
+              style={{ fontSize: 12, borderRadius: "20px" }}
+              onClick={() => setActivetime(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* KPI Row */}
       <div className="row g-3 mb-4">
@@ -178,21 +194,25 @@ export default function AdminDashboard() {
         ].map((kpi, i) => (
           <div className="col-sm-6 col-xl-3" key={i}>
             <div className="card p-3">
-              {loading ? (<div className="row g-3 mb-4">
-  {Array(4).fill().map((_, i) => (
-    <div className="col-sm-6 col-xl-3" key={i}>
-      <div className="card p-3">
-        <Skeleton height={12} width="40%" />
-        <div className="mt-2">
-          <Skeleton height={28} width="70%" />
-        </div>
-        <div className="mt-2">
-          <Skeleton height={10} width="50%" />
-        </div>
-      </div>
-    </div>
-  ))}
-</div>) : (
+              {loading ? (
+                <div className="row g-3 mb-4">
+                  {Array(4)
+                    .fill()
+                    .map((_, i) => (
+                      <div className="col-sm-6 col-xl-3" key={i}>
+                        <div className="card p-3">
+                          <Skeleton height={12} width="40%" />
+                          <div className="mt-2">
+                            <Skeleton height={28} width="70%" />
+                          </div>
+                          <div className="mt-2">
+                            <Skeleton height={10} width="50%" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
                 <KpiCard
                   title={kpi.title}
                   value={kpi.value}
@@ -204,9 +224,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         ))}
-        
       </div>
-
 
       {/* Charts Row */}
       <div className="row g-3 mb-4">
@@ -349,19 +367,38 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? 
-                  Array(6).fill().map((_, i) => (
-    <tr key={i}>
-      <td><Skeleton width={30} /></td>
-      <td><Skeleton width={120} /></td>
-      <td><Skeleton width={100} /></td>
-      <td><Skeleton width={80} /></td>
-      <td><Skeleton width={90} /></td>
-      <td><Skeleton width={60} /></td>
-      <td><Skeleton width={80} /></td>
-      <td><Skeleton width={70} /></td>
-    </tr>
-  )) : filteredStores.length === 0 ? (
+                {loading ? (
+                  Array(6)
+                    .fill()
+                    .map((_, i) => (
+                      <tr key={i}>
+                        <td>
+                          <Skeleton width={30} />
+                        </td>
+                        <td>
+                          <Skeleton width={120} />
+                        </td>
+                        <td>
+                          <Skeleton width={100} />
+                        </td>
+                        <td>
+                          <Skeleton width={80} />
+                        </td>
+                        <td>
+                          <Skeleton width={90} />
+                        </td>
+                        <td>
+                          <Skeleton width={60} />
+                        </td>
+                        <td>
+                          <Skeleton width={80} />
+                        </td>
+                        <td>
+                          <Skeleton width={70} />
+                        </td>
+                      </tr>
+                    ))
+                ) : filteredStores.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center text-muted py-4">
                       No stores found
@@ -454,72 +491,84 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {loading ?  Array(5).fill().map((_, i) => (
-    <tr key={i}>
-      <td><Skeleton width={30} /></td>
-      <td><Skeleton width={120} /></td>
-      <td><Skeleton width={80} /></td>
-      <td><Skeleton width={70} /></td>
-      <td><Skeleton width={90} /></td>
-      <td>
-        <Skeleton height={6} width="100%" />
-      </td>
-    </tr>
-  )):
-                topProducts.map((p, i) => {
-                  const pct = totalUnits
-                    ? ((Number(p.totalSold) / totalUnits) * 100).toFixed(1)
-                    : 0;
-                  return (
-                    <tr key={i}>
-                      <td>
-                        <span className="badge bg-primary rounded-pill">
-                          {i + 1}
-                        </span>
-                      </td>
-                      <td className="fw-semibold" style={{ fontSize: 13 }}>
-                        {p.product_name}
-                      </td>
-                      <td>
-                        <span
-                          className="badge bg-secondary-subtle text-secondary"
-                          style={{ fontSize: 11 }}
-                        >
-                          {p.category}
-                        </span>
-                      </td>
-                      <td style={{ fontSize: 13 }}>
-                        {Number(p.totalSold).toLocaleString()}
-                      </td>
-                      <td className="fw-semibold" style={{ fontSize: 13 }}>
-                        {fmt(p.totalRevenue ?? 0)}
-                      </td>
-                      <td style={{ minWidth: 160 }}>
-                        <div className="d-flex align-items-center gap-2">
-                          <div
-                            className="progress flex-grow-1"
-                            style={{ height: 6 }}
-                          >
-                            <div
-                              className="progress-bar"
-                              style={{
-                                width: `${pct}%`,
-                                backgroundColor: COLORS[i % COLORS.length],
-                              }}
-                            />
-                          </div>
-                          <small
-                            className="text-muted"
-                            style={{ fontSize: 11 }}
-                          >
-                            {pct}%
-                          </small>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              
+                {loading
+                  ? Array(5)
+                      .fill()
+                      .map((_, i) => (
+                        <tr key={i}>
+                          <td>
+                            <Skeleton width={30} />
+                          </td>
+                          <td>
+                            <Skeleton width={120} />
+                          </td>
+                          <td>
+                            <Skeleton width={80} />
+                          </td>
+                          <td>
+                            <Skeleton width={70} />
+                          </td>
+                          <td>
+                            <Skeleton width={90} />
+                          </td>
+                          <td>
+                            <Skeleton height={6} width="100%" />
+                          </td>
+                        </tr>
+                      ))
+                  : topProducts.map((p, i) => {
+                      const pct = totalUnits
+                        ? ((Number(p.totalSold) / totalUnits) * 100).toFixed(1)
+                        : 0;
+                      return (
+                        <tr key={i}>
+                          <td>
+                            <span className="badge bg-primary rounded-pill">
+                              {i + 1}
+                            </span>
+                          </td>
+                          <td className="fw-semibold" style={{ fontSize: 13 }}>
+                            {p.product_name}
+                          </td>
+                          <td>
+                            <span
+                              className="badge bg-secondary-subtle text-secondary"
+                              style={{ fontSize: 11 }}
+                            >
+                              {p.category}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 13 }}>
+                            {Number(p.totalSold).toLocaleString()}
+                          </td>
+                          <td className="fw-semibold" style={{ fontSize: 13 }}>
+                            {fmt(p.totalRevenue ?? 0)}
+                          </td>
+                          <td style={{ minWidth: 160 }}>
+                            <div className="d-flex align-items-center gap-2">
+                              <div
+                                className="progress flex-grow-1"
+                                style={{ height: 6 }}
+                              >
+                                <div
+                                  className="progress-bar"
+                                  style={{
+                                    width: `${pct}%`,
+                                    backgroundColor: COLORS[i % COLORS.length],
+                                  }}
+                                />
+                              </div>
+                              <small
+                                className="text-muted"
+                                style={{ fontSize: 11 }}
+                              >
+                                {pct}%
+                              </small>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
               </tbody>
             </table>
           </div>

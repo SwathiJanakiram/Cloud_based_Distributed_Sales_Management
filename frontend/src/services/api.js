@@ -84,7 +84,12 @@ export const getUserName = () => api.get("/users/getUserName");
 export const getSalespersonsByStore = (store_id) =>
   api.get("users/getSalespersonsByStore", { params: { store_id } });
 
-// ─── Warehouses ──────────────────────────────────────────────────
+// ─── Assignment ─────────────────────────────────────────────────
+export const getAssignments= (id) => api.get(`/assignment/${id}`);
+export const createAssignment =(data) => api.post("/assignment",data);
+export const deleteAssignment =(id,data) =>api.delete(`/assignment/${id}`,data);
+
+// ─── Warehouses ─────────────────────────────────────────────────
 export const getWarehouses = (page = 1, limit = 10) =>
   api.get(`/warehouses?page=${page}&limit=${limit}`);
 export const createWarehouse = (data) => api.post("/warehouses", data);
@@ -102,4 +107,6 @@ export const transferStock=(data)=> api.post("/inventory/transfer",data);
 export const getProductsByWarehouse=(id) => api.get(`/inventory/getProductsByWarehouse/${id}`)
 
 export const getAuditLogs = (filters) => api.get("/audit", { params: filters });
+
+export const getTest =() => api.get("/users/test");
 export default api;

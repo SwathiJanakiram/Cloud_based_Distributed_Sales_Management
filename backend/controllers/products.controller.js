@@ -219,7 +219,7 @@ exports.getProductsByStore = async (req, res, next) => {
     if (req.user.role === "salesperson" || req.user.role === "store_manager") {
       const [store] = await db.query(
         `
-        SELECT location_id FROM user_store_assignments 
+        SELECT location_id FROM user_location_assignments 
         WHERE user_id= ? AND location_type="store" LIMIT 1 `,
         [req.user.user_id],
       );

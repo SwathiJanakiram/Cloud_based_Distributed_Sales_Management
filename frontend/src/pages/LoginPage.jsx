@@ -13,30 +13,35 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
-  try {
-    await login(email, password);         // Firebase login
-    const res = await api.get("/users/me"); // ✅ correct endpoint
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await login(email, password); // Firebase login
+      const res = await api.get("/users/me"); // ✅ correct endpoint
 
-    const role = res.data.data.role;
-    setUserRole(role);
+      const role = res.data.data.role;
+      const location_id = res.data.data.location_id;
+      const location_type = res.data.data.location_type;
+      setUserRole(role, location_id, location_type);
 
-    const dest =
-      role === "admin"             ? "/admin"          :
-      role === "regional_manager"  ? "/regionalmanager" :
-      role === "store_manager"     ? "/storemanager"    :
-      "/salesperson";
+      const dest =
+        role === "admin"
+          ? "/admin"
+          : role === "regional_manager"
+            ? "/regionalmanager"
+            : role === "store_manager"
+              ? "/storemanager"
+              : "/salesperson";
 
-    navigate(dest, { replace: true });
-  } catch (err) {
-    setError("Invalid email or password. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+      navigate(dest, { replace: true });
+    } catch (err) {
+      setError("Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-wrapper">

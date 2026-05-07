@@ -6,6 +6,7 @@ import {
   getStores,
   getStoreSales,
   getStorePerformance,
+  getTest,
 } from "../services/api";
 import KpiCard from "../components/KpiCard";
 import Topbar from "../components/Topbar";
@@ -93,6 +94,7 @@ export default function AdminDashboard() {
           getSummary(startDate),
           getByRegion(startDate),
           getTopProducts(startDate),
+          getTest(),
           getStorePerformance(startDate),
         ]);
 

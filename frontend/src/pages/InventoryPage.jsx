@@ -16,7 +16,7 @@ import { toast } from "react-toastify";
 const LOCATION_TYPES = ["store", "warehouse"];
 
 export default function InventoryPage() {
-  const { user } = useAuth();
+  const { user, role, location_id, location_type } = useAuth();
 
   const [inventory, setInventory] = useState([]);
   const [stores, setStores] = useState([]);
@@ -52,16 +52,20 @@ export default function InventoryPage() {
     quantity: "",
   });
 
+  
+
   const loadInventory = async () => {
     setLoading(true);
     setError("");
+    console.log(location_id,location_type);
     try {
       const res = await getInventory({
         location_id: filters.location_id || undefined,
-        location_type: filters.location_type,
+        location_type: filters.location_type ,
         page,
         limit: LIMIT,
       });
+      
       setInventory(res.data.data ?? []);
       setTotal(res.data.total ?? 0);
     } catch {
@@ -72,20 +76,46 @@ export default function InventoryPage() {
   };
 
   const loadDropdowns = async () => {
-    try {
-      const [s, w, p] = await Promise.all([
-        getStores(),
-        getWarehouses(),
-        getProducts(1, 100),
-      ]);
-      setStores(s.data.data ?? []);
-      setWarehouse(w.data.data ?? []);
-      setProducts(p.data.data ?? []);
-    } catch {
-      toast.error("Failed to load data.");
-    }
-  };
+  try {
+    const requests = [getProducts(1, 100)];
 
+    // Admin
+    if (role === "admin") {
+      requests.push(getStores());
+      requests.push(getWarehouses());
+    }
+
+    // Regional Manager
+    else if (role === "regional_manager") {
+      requests.push(getStores());
+    }
+
+    const responses = await Promise.all(requests);
+
+    // Products always first
+    const productsRes = responses[0];
+    setProducts(productsRes.data.data ?? []);
+
+    // Admin
+    if (role === "admin") {
+      const storesRes = responses[1];
+      const warehouseRes = responses[2];
+
+      setStores(storesRes.data.data ?? []);
+      setWarehouse(warehouseRes.data.data ?? []);
+    }
+
+    // Regional Manager
+    else if (role === "regional_manager") {
+      const storesRes = responses[1];
+      setStores(storesRes.data.data ?? []);
+    }
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to load data.");
+  }
+};
   useEffect(() => {
     loadDropdowns();
   }, []);
@@ -145,8 +175,8 @@ export default function InventoryPage() {
     try {
       await syncInventory({
         product_id: Number(syncForm.product_id),
-        location_id: Number(syncForm.location_id),
-        location_type: syncForm.location_type,
+        location_id: Number(syncForm.location_id) ||location_id,
+        location_type: syncForm.location_type || location_type,
         quantity: Number(syncForm.quantity),
         low_stock_threshold: Number(syncForm.low_stock_limit),
       });
@@ -173,8 +203,8 @@ export default function InventoryPage() {
     try {
       await transferStock({
         product_id: Number(transferForm.product_id),
-        from_location_id: Number(transferForm.from_location_id),
-        from_location_type: transferForm.from_location_type,
+        from_location_id: Number(transferForm.from_location_id) || location_id,
+        from_location_type: transferForm.from_location_type || location_type,
         to_location_id: Number(transferForm.to_location_id),
         to_location_type: transferForm.to_location_type,
         quantity: Number(transferForm.quantity),
@@ -238,7 +268,7 @@ export default function InventoryPage() {
   return (
     <>
       <Topbar title="Inventory">
-        {!showTransferForm && (
+        {["admin", "regional_manager", "store_mananger"].includes(role) && !showTransferForm && (
           <button
             className="btn btn-primary btn-sm fw-semibold"
             style={{ borderRadius: "20px", fontSize: 13, marginRight: "10px" }}
@@ -253,7 +283,7 @@ export default function InventoryPage() {
             {showSyncForm ? "Cancel" : "Sync Stock"}
           </button>
         )}
-        {!showSyncForm && (
+        {["admin", "regional_manager"].includes(role) && !showSyncForm&& (
           <button
             className="btn btn-primary btn-sm fw-semibold"
             style={{ borderRadius: "20px", fontSize: 13 }}
@@ -309,6 +339,7 @@ export default function InventoryPage() {
                       ))}
                     </select>
                   </div>
+                  { role === "admin" && (<>
 
                   <div className="col-md-3">
                     <label
@@ -374,6 +405,7 @@ export default function InventoryPage() {
                       </select>
                     )}
                   </div>
+                  </>)}
 
                   <div className="col-md-2">
                     <label
@@ -434,7 +466,7 @@ export default function InventoryPage() {
             {showTransferForm && (
               <form onSubmit={handleTransfer}>
                 <div className="row g-3">
-                  <div className="col-md-4">
+                  {role === "admin" && (<div className="col-md-4">
                     <label
                       className="form-label fw-semibold"
                       style={{ fontSize: 12 }}
@@ -456,7 +488,7 @@ export default function InventoryPage() {
                       ))}
                     </select>
                   </div>
-
+                  )}
                   <div className="col-md-4">
                     <label
                       className="form-label fw-semibold"
@@ -540,6 +572,9 @@ export default function InventoryPage() {
         </div>
       )}
 
+      {role==="admin" && (
+        <>
+
       {/* Filters */}
       <div
         className="card border-0 shadow-sm mb-4"
@@ -567,6 +602,7 @@ export default function InventoryPage() {
                 ))}
               </select>
             </div>
+            
 
             {filters.location_type === "store" ? (
               <div className="col-md-4">
@@ -590,7 +626,7 @@ export default function InventoryPage() {
                   ))}
                 </select>
               </div>
-            ) : (
+            ) :  role === "admin" && (
               <div className="col-md-4">
                 <label
                   className="form-label fw-semibold mb-1"
@@ -622,6 +658,8 @@ export default function InventoryPage() {
           </div>
         </div>
       </div>
+      </>
+)}
 
       {/* Table */}
       <div

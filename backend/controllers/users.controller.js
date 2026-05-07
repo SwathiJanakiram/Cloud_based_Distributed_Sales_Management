@@ -237,18 +237,23 @@ exports.getMe = async (req, res, next) => {
     const user_id = req.user.user_id;
 
     const [assignments] = await db.query(
-      `SELECT location_id AS store_id 
-       FROM user_store_assignments 
-       WHERE user_id = ? AND location_type = 'store' AND is_active = 1 
-       LIMIT 1`,
+      `SELECT location_id, location_type
+       FROM user_location_assignments
+       WHERE user_id = ? AND is_active = 1`,
       [user_id]
     );
 
-    const store_id = assignments.length ? assignments[0].store_id : null;
+    // Group by type for convenience on the frontend
+    const stores     = assignments.filter(a => a.location_type === 'store')    .map(a => a.location_id);
+    const warehouses = assignments.filter(a => a.location_type === 'warehouse').map(a => a.location_id);
 
     res.json({
       success: true,
-      data: { ...req.user, store_id },
+      data: {
+        ...req.user,
+        stores,        // [1, 2]  — all stores this user is assigned to
+        warehouses,    // [1, 2]  — all warehouses
+      },
     });
   } catch (error) {
     next(error);
@@ -263,7 +268,7 @@ exports.getSalespersonsByStore = async (req, res, next) => {
 
     if (user.role === "store_manager") {
       const [store] = await db.query(
-        `SELECT location_id FROM user_store_assignments 
+        `SELECT location_id FROM user_location_assignments 
          WHERE user_id = ? AND location_type = 'store' LIMIT 1`,
         [user.user_id]
       );
@@ -274,7 +279,7 @@ exports.getSalespersonsByStore = async (req, res, next) => {
     let query = `
       SELECT u.user_id, u.name
       FROM users u
-      JOIN user_store_assignments ua ON ua.user_id = u.user_id
+      JOIN user_location_assignments ua ON ua.user_id = u.user_id
       WHERE u.role = 'salesperson'
         AND ua.location_type = 'store'
         AND ua.location_id = ?
@@ -287,7 +292,7 @@ exports.getSalespersonsByStore = async (req, res, next) => {
       query += `
         AND ua.location_id IN (
           SELECT location_id
-          FROM user_store_assignments
+          FROM user_location_assignments
           WHERE user_id = ?
             AND location_type = 'store'
         )

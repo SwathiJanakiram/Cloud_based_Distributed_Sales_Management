@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getUsers, deleteUser, createUser, editUser } from "../services/api";
 import Topbar from "../components/Topbar";
+import AssignmentModal from "../components/AssignmentModal";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { toast } from "react-toastify";
 import Skeleton from "react-loading-skeleton";
@@ -34,6 +35,7 @@ export default function UsersPage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const LIMIT = 10;
@@ -143,6 +145,7 @@ export default function UsersPage() {
       region_id: "",
     });
     setShowDeleteModal(false);
+    setShowAssignModal(false);
     setSelectedUser(null);
   };
   const totalPages = Math.ceil(total / LIMIT);
@@ -179,7 +182,7 @@ export default function UsersPage() {
                 {loading ? (
                   Array(10)
                     .fill()
-                    .map((_,i) => (
+                    .map((_, i) => (
                       <tr key={i}>
                         {Array(5)
                           .fill()
@@ -233,25 +236,39 @@ export default function UsersPage() {
                           : "—"}
                       </td>
                       <td class="text-muted">
-                        <button
-                          class="btn btn-sm btn-outline-primary"
-                          onClick={() => {
-                            setIsEdit(true);
-                            setForm(u);
-                            setShowModal(true);
-                          }}
-                        >
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          class="btn btn-sm btn-outline-danger"
-                          onClick={() => {
-                            setSelectedUser(u);
-                            setShowDeleteModal(true);
-                          }}
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            class="btn btn-sm btn-outline-primary"
+                            onClick={() => {
+                              setIsEdit(true);
+                              setForm(u);
+                              setShowModal(true);
+                            }}
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button
+                            class="btn btn-sm btn-outline-danger"
+                            onClick={() => {
+                              setSelectedUser(u);
+                              setShowDeleteModal(true);
+                            }}
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                          {u.role !== "admin" && (
+                            <button
+                              className="btn btn-sm btn-outline-secondary"
+                              title="Manage assignments"
+                              onClick={() => {
+                                setSelectedUser(u);
+                                setShowAssignModal(true);
+                              }}
+                            >
+                              <i className="bi bi-geo-alt" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -494,6 +511,12 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+     {showAssignModal && selectedUser && (
+  <AssignmentModal
+    user={selectedUser}
+    onClose={() => { setShowAssignModal(false); setSelectedUser(null); }}
+  />
+)}
     </>
   );
 }

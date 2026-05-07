@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createUser,editUser, deleteUser, getUsers, getMe, getUserName, getSalespersonsByStore, updateUser } = require("../controllers/users.controller");
+const { createUser,editUser, deleteUser, getUsers, getMe, getUserName, getSalespersonsByStore, updateUser} = require("../controllers/users.controller");
 const { body,param, validationResult } = require("express-validator");
 const { verifyFirebaseToken, authorizeRoles } = 
   require("../middleware/firebaseAuth.middleware");
@@ -16,7 +16,6 @@ const validate = (req, res, next) => {
   next();
 };
 
- 
 router.use(verifyFirebaseToken);
 router.post(
   "/",
@@ -68,5 +67,7 @@ router.get("/getUserName",authorizeRoles("admin"),getUserName);
 router.get("/me", getMe);
 
 router.get("/getSalespersonsByStore",authorizeRoles("admin", "store_manager", "regional_manager"),getSalespersonsByStore);
+
+
 
 module.exports = router;

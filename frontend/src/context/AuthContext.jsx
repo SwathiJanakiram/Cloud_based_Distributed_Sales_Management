@@ -1,14 +1,20 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { auth } from "../config/firebase";
 import { getUsers } from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null);
-  const [role, setRole]       = useState(null);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [locationId, setlocationId] = useState(null);
+  const [locationType, setlocationType] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +29,11 @@ export function AuthProvider({ children }) {
         // Firebase custom claims (recommended). For now we read from localStorage
         // after the first login.
         const savedRole = localStorage.getItem("userRole");
+        const savedLocationId = localStorage.getItem("locationId");
+        const savedLocationType = localStorage.getItem("locationType");
         setRole(savedRole);
+        setlocationId(savedLocationId);
+        setlocationType(savedLocationType);
       } else {
         setUser(null);
         setRole(null);
@@ -44,17 +54,32 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     await signOut(auth);
-    localStorage.removeItem("userRole");
+    localStorage.clear();
   };
 
   // Call this after login to persist role (role comes from backend response)
-  const setUserRole = (r) => {
+  const setUserRole = (r, id, type) => {
     setRole(r);
+    setlocationId(id);
+    setlocationType(type);
     localStorage.setItem("userRole", r);
+    localStorage.setItem("locationId", id);
+    localStorage.setItem("locationType", type);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, logout, setUserRole }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        locationId,
+        locationType,
+        loading,
+        login,
+        logout,
+        setUserRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

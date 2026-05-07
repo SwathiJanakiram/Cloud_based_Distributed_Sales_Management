@@ -27,7 +27,7 @@ router.post(
     .withMessage("Quantity must be greater than 0"),
   strictLimiter,
   validate,
-  authorizeRoles("salesperson", "admin"),
+  authorizeRoles("salesperson", "admin", "regional_manager", "store_manager"),
   createSale
 );
 

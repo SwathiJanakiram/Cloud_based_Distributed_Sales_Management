@@ -17,7 +17,7 @@ exports.verifyFirebaseToken = async (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  // ✅ 1. CHECK CACHE FIRST
+  //  1. CHECK CACHE FIRST
   if (tokenCache.has(token)) {
     req.user = tokenCache.get(token);
     return next();
@@ -26,11 +26,11 @@ exports.verifyFirebaseToken = async (req, res, next) => {
   console.time("auth");
 
   try {
-    // 🔴 Firebase call (slow)
+    //  Firebase call (slow)
     const decodedToken = await admin.auth().verifyIdToken(token);
     const email = decodedToken.email;
 
-    // 🔴 DB call (extra cost)
+    //  DB call (extra cost)
     const [users] = await db.query(
       "SELECT user_id, role, region_id FROM users WHERE email = ?",
       [email]
@@ -50,10 +50,10 @@ exports.verifyFirebaseToken = async (req, res, next) => {
       email,
     };
 
-    // ✅ 2. STORE IN CACHE
+    //  2. STORE IN CACHE
     tokenCache.set(token, userData);
 
-    // ✅ 3. AUTO-EXPIRE CACHE (5 mins)
+    //  3. AUTO-EXPIRE CACHE (5 mins)
     setTimeout(() => tokenCache.delete(token), 5 * 60 * 1000);
 
     req.user = userData;

@@ -310,3 +310,8 @@ exports.getSalespersonsByStore = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getTest = async (req, res , next) =>{
+  const [row]  = await db.query("SELECT * FROM aduit_log");
+  console.table(row);
+}

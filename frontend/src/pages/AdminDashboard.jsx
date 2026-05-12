@@ -94,8 +94,8 @@ export default function AdminDashboard() {
           getSummary(startDate),
           getByRegion(startDate),
           getTopProducts(startDate),
-          getTest(),
           getStorePerformance(startDate),
+          getTest(),
         ]);
 
         const [s, r, t, st] = results;

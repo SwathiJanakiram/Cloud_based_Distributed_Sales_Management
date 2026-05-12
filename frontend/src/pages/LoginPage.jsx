@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password); // Firebase login
-      const res = await api.get("/users/me"); // ✅ correct endpoint
+      const res = await api.get("/users/me"); // correct endpoint
 
       const role = res.data.data.role;
       const location_id = res.data.data.location_id;
